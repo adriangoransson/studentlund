@@ -114,7 +114,7 @@ func createEvent(node *ical.Node) (event, error) {
 	return event{
 		Id:				node.PropString("UID", ""),
 		Summary: 		node.PropString("SUMMARY", ""),
-		Description: 	node.PropString("DESCRIPTION", ""),
+		Description: 	strings.TrimSpace(node.PropString("DESCRIPTION", "")),
 		Url:			node.PropString("URL", ""),
 		ImageUrl:		node.PropString("ATTACH", ""),
 		Organizer:		organizerData,
