@@ -31,43 +31,50 @@ type event struct {
 	Organizer	organizer	`json:"organizer"`
 }
 
+func stripMailto(email string) string {
+	if strings.HasPrefix(email, "MAILTO:") {
+		return email[7:]
+	}
+
+	return email
+}
+
 func resolveOrganizer(node *ical.Node) (organizer, error) {
 	// Try the ORGANIZER field, CN parameter first
 	organizerField := node.ChildByName("ORGANIZER")
 
 	if organizerField != nil {
+		// URL decode the CN field
 		organizerName, err := url.PathUnescape(organizerField.Parameter("CN", ""))
 		if err != nil {
 			return organizer{}, err
 		}
+
+		// Remove quotes surrounding the organizer name
 		organizerName = strings.Trim(organizerName, "\"")
-		// strip MAILTO: from email
-		if strings.HasPrefix(organizerField.Value, "MAILTO:") {
-			return organizer{
-				Name:	organizerName,
-				Email:	organizerField.Value[7:],
-			}, nil
-		}
+
+		// strip MAILTO: before email if it exists
 		return organizer{
 			Name:	organizerName,
-			Email:	organizerField.Value,
+			Email:	stripMailto(organizerField.Value),
 		}, nil
-	} else {
-		// Try parsing the nation name from the summary
-		organizerName := resolveNationByText(node.PropString("SUMMARY", ""))
-		if organizerName != "" {
-			return organizer{
-				Name:	organizerName,
-				Email:	"",
-			}, nil
-		} else {
-			// Try the description instead
-			return organizer{
-				Name:	resolveNationByText(node.PropString("DESCRIPTION", "")),
-				Email:	"",
-			}, nil
-		}
 	}
+
+	// ORGANIZER field didn't exist in calendar node
+	// Try parsing the organizer name from the SUMMARY field instead
+	organizerName := resolveNationByText(node.PropString("SUMMARY", ""))
+	if organizerName != "" {
+		return organizer{
+			Name:	organizerName,
+			Email:	"",
+		}, nil
+	}
+
+	// No match in SUMMARY. Try DESCRIPTION instead
+	return organizer{
+		Name:	resolveNationByText(node.PropString("DESCRIPTION", "")),
+		Email:	"",
+	}, nil
 }
 
 func resolveNationByText(text string) string {
