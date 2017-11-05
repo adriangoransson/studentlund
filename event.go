@@ -9,26 +9,26 @@ import (
 	"github.com/laurent22/ical-go"
 )
 
-type organizer struct {
+type Organizer struct {
 	Name	string	`json:"name"`
 	Email	string	`json:"email"`
 }
 
-type dates struct {
+type Dates struct {
 	Start		time.Time	`json:"start"`
 	End			time.Time	`json:"end"`
 	LastUpdated	time.Time	`json:"last_updated"`
 }
 
-type event struct {
+type Event struct {
 	Id			string		`json:"id"`
 	Summary 	string		`json:"summary"`
 	Description	string		`json:"description"`
 	Url			string		`json:"url"`
 	ImageUrl	string		`json:"image_url"`
 	Location	string		`json:"location"`
-	Date 		dates		`json:"date"`
-	Organizer	organizer	`json:"organizer"`
+	Date 		Dates		`json:"date"`
+	Organizer	Organizer	`json:"organizer"`
 }
 
 func stripMailto(email string) string {
@@ -39,24 +39,24 @@ func stripMailto(email string) string {
 	return email
 }
 
-func resolveOrganizer(node *ical.Node) (organizer, error) {
+func resolveOrganizer(node *ical.Node) (Organizer, error) {
 	// Try the ORGANIZER field, CN parameter first
-	organizerField := node.ChildByName("ORGANIZER")
+	organizer := node.ChildByName("ORGANIZER")
 
-	if organizerField != nil {
+	if organizer != nil {
 		// URL decode the CN field
-		organizerName, err := url.PathUnescape(organizerField.Parameter("CN", ""))
+		organizerName, err := url.PathUnescape(organizer.Parameter("CN", ""))
 		if err != nil {
-			return organizer{}, err
+			return Organizer{}, err
 		}
 
 		// Remove quotes surrounding the organizer name
 		organizerName = strings.Trim(organizerName, "\"")
 
 		// strip MAILTO: before email if it exists
-		return organizer{
+		return Organizer{
 			Name:	organizerName,
-			Email:	stripMailto(organizerField.Value),
+			Email:	stripMailto(organizer.Value),
 		}, nil
 	}
 
@@ -64,14 +64,14 @@ func resolveOrganizer(node *ical.Node) (organizer, error) {
 	// Try parsing the organizer name from the SUMMARY field instead
 	organizerName := resolveNationByText(node.PropString("SUMMARY", ""))
 	if organizerName != "" {
-		return organizer{
+		return Organizer{
 			Name:	organizerName,
 			Email:	"",
 		}, nil
 	}
 
 	// No match in SUMMARY. Try DESCRIPTION instead
-	return organizer{
+	return Organizer{
 		Name:	resolveNationByText(node.PropString("DESCRIPTION", "")),
 		Email:	"",
 	}, nil
@@ -95,14 +95,14 @@ func resolveNationByText(text string) string {
 	return ""
 }
 
-func createEvent(node *ical.Node) (event, error) {
-	organizerData, err := resolveOrganizer(node)
+func createEvent(node *ical.Node) (Event, error) {
+	organizer, err := resolveOrganizer(node)
 
 	if err != nil {
-		return event{}, err
+		return Event{}, err
 	}
 
-	date := dates{
+	date := Dates{
 		Start:			node.PropDate("DTSTART", time.Now()),
 		End:			node.PropDate("DTEND", time.Now()),
 		LastUpdated:	node.PropDate("LAST-MODIFIED", time.Now()),
@@ -111,13 +111,13 @@ func createEvent(node *ical.Node) (event, error) {
 	// Remove weird backslashes from the location field
 	address := strings.Replace(node.PropString("LOCATION", ""), "\\", "", -1)
 
-	return event{
+	return Event{
 		Id:				node.PropString("UID", ""),
 		Summary: 		node.PropString("SUMMARY", ""),
 		Description: 	strings.TrimSpace(node.PropString("DESCRIPTION", "")),
 		Url:			node.PropString("URL", ""),
 		ImageUrl:		node.PropString("ATTACH", ""),
-		Organizer:		organizerData,
+		Organizer:		organizer,
 		Location:		address,
 		Date:			date,
 	}, nil

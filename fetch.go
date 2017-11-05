@@ -31,13 +31,13 @@ func fetch(url string) (string, error) {
 	return string(body), nil
 }
 
-func translate(icalData string) ([]event, error) {
+func translate(icalData string) ([]Event, error) {
 	calendar, err := ical.ParseCalendar(icalData)
 	if err != nil {
 		return nil, err
 	}
 
-	var events []event
+	var events []Event
 	for _, node := range calendar.Children {
 		if node.Type == 1 {
 			_event, err := createEvent(node)
@@ -51,7 +51,7 @@ func translate(icalData string) ([]event, error) {
 	return events, nil
 }
 
-func convert(url string) ([]event, error) {
+func convert(url string) ([]Event, error) {
 	icalData, err := fetch(url)
 	if err != nil {
 		return nil, err
@@ -73,31 +73,31 @@ func appendDate(url string, date time.Time) string {
 	return url + formatDate(date)
 }
 
-func GetCurrentDay() ([]event, error) {
+func GetCurrentDay() ([]Event, error) {
 	return GetDay(time.Now())
 }
 
-func GetDay(date time.Time) ([]event, error) {
+func GetDay(date time.Time) ([]Event, error) {
 	url := appendDate(STUDENTLUND_DAILY, date)
 
 	return convert(url)
 }
 
-func GetCurrentWeek() ([]event, error) {
+func GetCurrentWeek() ([]Event, error) {
 	return GetWeek(time.Now())
 }
 
-func GetWeek(date time.Time) ([]event, error) {
+func GetWeek(date time.Time) ([]Event, error) {
 	url := appendDate(STUDENTLUND_WEEKLY, date)
 
 	return convert(url)
 }
 
-func GetCurrentMonth() ([]event, error) {
+func GetCurrentMonth() ([]Event, error) {
 	return GetMonth(time.Now())
 }
 
-func GetMonth(date time.Time) ([]event, error) {
+func GetMonth(date time.Time) ([]Event, error) {
 	url := appendDate(STUDENTLUND_MONTHLY, date)
 
 	return convert(url)
