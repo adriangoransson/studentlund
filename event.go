@@ -46,6 +46,8 @@ func resolveOrganizer(node *ical.Node) (Organizer, error) {
 	if organizer != nil {
 		// URL decode the CN field
 		organizerName, err := url.PathUnescape(organizer.Parameter("CN", ""))
+		organizerName = strings.Title(organizerName)
+
 		if err != nil {
 			return Organizer{}, err
 		}
@@ -89,7 +91,7 @@ func resolveNationByText(text string) string {
 	matches := re.FindStringSubmatch(text)
 	// Find the name of the nation, the inflection of the word nation and capitalize both words
 	if len(matches) > 1 {
-		return (strings.Title(matches[1]) + " " + strings.Title(matches[2]))
+		return strings.Title(matches[1] + " " + matches[2])
 	}
 
 	return ""
