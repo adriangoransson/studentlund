@@ -20,16 +20,16 @@ type event struct {
 	LastUpdated	time.Time	`json:"last_updated"`
 }
 
-func resolveNation(summary string) string {
+func resolveNation(text string) string {
 	// Because these just can't do it like the others
-	if strings.Contains(summary, "Blekingska") {
+	if strings.Contains(text, "Blekingska") {
 		return "Blekingska Nationen"
-	} else if strings.Contains(summary, "VG") {
+	} else if strings.Contains(text, "VG") {
 		return "Västgöta Nation"
 	}
 
 	re := regexp.MustCompile(`([\wÅÄÖåäö]+) ([Nn]ation(?:en)?)`)
-	matches := re.FindStringSubmatch(summary)
+	matches := re.FindStringSubmatch(text)
 	// Find the name of the nation, the inflection of the word nation and capitalize both words
 	if len(matches) > 1 {
 		return (strings.Title(matches[1]) + " " + strings.Title(matches[2]))
