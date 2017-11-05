@@ -88,8 +88,12 @@ func resolveNationByText(text string) string {
 	return ""
 }
 
-func createEvent(node *ical.Node) event {
-	organizerData, _ := resolveOrganizer(node)
+func createEvent(node *ical.Node) (event, error) {
+	organizerData, err := resolveOrganizer(node)
+
+	if err != nil {
+		return event{}, err
+	}
 
 	date := dates{
 		Start:			node.PropDate("DTSTART", time.Now()),
@@ -109,5 +113,5 @@ func createEvent(node *ical.Node) event {
 		Organizer:		organizerData,
 		Location:		address,
 		Date:			date,
-	}
+	}, nil
 }

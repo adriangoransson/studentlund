@@ -40,7 +40,10 @@ func translate(icalData string) ([]event, error) {
 	var events []event
 	for _, node := range calendar.Children {
 		if node.Type == 1 {
-			_event := createEvent(node)
+			_event, err := createEvent(node)
+			if err != nil {
+				return events, err
+			}
 			events = append(events, _event)
 		}
 	}
