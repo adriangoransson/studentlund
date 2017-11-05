@@ -4,23 +4,73 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"net/url"
 
 	"github.com/laurent22/ical-go"
 )
+
+type organizer struct {
+	Name	string	`json:"name"`
+	Email	string	`json:"email"`
+}
+
+type dates struct {
+	Start		time.Time	`json:"start"`
+	End			time.Time	`json:"end"`
+	LastUpdated	time.Time	`json:"last_updated"`
+}
 
 type event struct {
 	Id			string		`json:"id"`
 	Summary 	string		`json:"summary"`
 	Description	string		`json:"description"`
 	Url			string		`json:"url"`
+	ImageUrl	string		`json:"image_url"`
 	Location	string		`json:"location"`
-	Nation		string		`json:"nation"`
-	DateStart 	time.Time	`json:"date_start"`
-	DateEnd 	time.Time	`json:"date_end"`
-	LastUpdated	time.Time	`json:"last_updated"`
+	Date 		dates		`json:"date"`
+	Organizer	organizer	`json:"organizer"`
 }
 
-func resolveNation(text string) string {
+func resolveOrganizer(node *ical.Node) (organizer, error) {
+	// Try the ORGANIZER field, CN parameter first
+	organizerField := node.ChildByName("ORGANIZER")
+
+	if organizerField != nil {
+		organizerName, err := url.PathUnescape(organizerField.Parameter("CN", ""))
+		if err != nil {
+			return organizer{}, err
+		}
+		organizerName = strings.Trim(organizerName, "\"")
+		// strip MAILTO: from email
+		if strings.HasPrefix(organizerField.Value, "MAILTO:") {
+			return organizer{
+				Name:	organizerName,
+				Email:	organizerField.Value[7:],
+			}, nil
+		}
+		return organizer{
+			Name:	organizerName,
+			Email:	organizerField.Value,
+		}, nil
+	} else {
+		// Try parsing the nation name from the summary
+		organizerName := resolveNationByText(node.PropString("SUMMARY", ""))
+		if organizerName != "" {
+			return organizer{
+				Name:	organizerName,
+				Email:	"",
+			}, nil
+		} else {
+			// Try the description instead
+			return organizer{
+				Name:	resolveNationByText(node.PropString("DESCRIPTION", "")),
+				Email:	"",
+			}, nil
+		}
+	}
+}
+
+func resolveNationByText(text string) string {
 	// Because these just can't do it like the others
 	if strings.Contains(text, "Blekingska") {
 		return "Blekingska Nationen"
@@ -39,13 +89,12 @@ func resolveNation(text string) string {
 }
 
 func createEvent(node *ical.Node) event {
-	summary := node.PropString("SUMMARY", "")
-	description := node.PropString("DESCRIPTION", "")
+	organizerData, _ := resolveOrganizer(node)
 
-	nation := resolveNation(summary)
-	// If not found in summary, try the description
-	if nation == "" {
-		nation = resolveNation(description)
+	date := dates{
+		Start:			node.PropDate("DTSTART", time.Now()),
+		End:			node.PropDate("DTEND", time.Now()),
+		LastUpdated:	node.PropDate("LAST-MODIFIED", time.Now()),
 	}
 
 	// Remove weird backslashes from the location field
@@ -53,13 +102,12 @@ func createEvent(node *ical.Node) event {
 
 	return event{
 		Id:				node.PropString("UID", ""),
-		Summary: 		summary,
-		Description: 	description,
+		Summary: 		node.PropString("SUMMARY", ""),
+		Description: 	node.PropString("DESCRIPTION", ""),
 		Url:			node.PropString("URL", ""),
-		Nation:			nation,
+		ImageUrl:		node.PropString("ATTACH", ""),
+		Organizer:		organizerData,
 		Location:		address,
-		DateStart:		node.PropDate("DTSTART", time.Now()),
-		DateEnd:		node.PropDate("DTEND", time.Now()),
-		LastUpdated:	node.PropDate("LAST-MODIFIED", time.Now()),
+		Date:			date,
 	}
 }

@@ -41,9 +41,7 @@ func translate(icalData string) ([]event, error) {
 	for _, node := range calendar.Children {
 		if node.Type == 1 {
 			_event := createEvent(node)
-			if _event.Nation != "" {
-				events = append(events, _event)
-			}
+			events = append(events, _event)
 		}
 	}
 
