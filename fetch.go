@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	STUDENTLUND_DAILY	= "https://www.studentlund.se/event/idag/?ical=1&tribe_display=day&tribe-bar-date="
-	STUDENTLUND_WEEKLY	= "https://www.studentlund.se/event/vecka/?ical=1&tribe_display=week&tribe-bar-date="
-	STUDENTLUND_MONTHLY	= "https://www.studentlund.se/event/manad/?ical=1&tribe_display=month&tribe-bar-date="
+	studentLundDaily	= "https://www.studentlund.se/event/idag/?ical=1&tribe_display=day&tribe-bar-date="
+	studentlundWeekly	= "https://www.studentlund.se/event/vecka/?ical=1&tribe_display=week&tribe-bar-date="
+	studentlundMonthly	= "https://www.studentlund.se/event/manad/?ical=1&tribe_display=month&tribe-bar-date="
 )
 
 
@@ -78,7 +78,7 @@ func GetCurrentDay() ([]Event, error) {
 }
 
 func GetDay(date time.Time) ([]Event, error) {
-	url := appendDate(STUDENTLUND_DAILY, date)
+	url := appendDate(studentLundDaily, date)
 
 	return convert(url)
 }
@@ -88,7 +88,7 @@ func GetCurrentWeek() ([]Event, error) {
 }
 
 func GetWeek(date time.Time) ([]Event, error) {
-	url := appendDate(STUDENTLUND_WEEKLY, date)
+	url := appendDate(studentlundWeekly, date)
 
 	return convert(url)
 }
@@ -98,7 +98,7 @@ func GetCurrentMonth() ([]Event, error) {
 }
 
 func GetMonth(date time.Time) ([]Event, error) {
-	url := appendDate(STUDENTLUND_MONTHLY, date)
+	url := appendDate(studentlundMonthly, date)
 
 	return convert(url)
 }
