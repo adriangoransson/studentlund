@@ -3,18 +3,17 @@ package studentlund
 import (
 	"time"
 
-	"net/http"
 	"io/ioutil"
+	"net/http"
 
 	"github.com/laurent22/ical-go"
 )
 
 const (
-	studentLundDaily	= "https://www.studentlund.se/event/idag/?ical=1&tribe_display=day&tribe-bar-date="
-	studentlundWeekly	= "https://www.studentlund.se/event/vecka/?ical=1&tribe_display=week&tribe-bar-date="
-	studentlundMonthly	= "https://www.studentlund.se/event/manad/?ical=1&tribe_display=month&tribe-bar-date="
+	studentLundDaily   = "https://www.studentlund.se/event/idag/?ical=1&tribe_display=day&tribe-bar-date="
+	studentlundWeekly  = "https://www.studentlund.se/event/vecka/?ical=1&tribe_display=week&tribe-bar-date="
+	studentlundMonthly = "https://www.studentlund.se/event/manad/?ical=1&tribe_display=month&tribe-bar-date="
 )
-
 
 func fetch(url string) (string, error) {
 	resp, err := http.Get(url)
