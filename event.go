@@ -32,6 +32,25 @@ type Event struct {
 	Organizer   Organizer `json:"organizer"`
 }
 
+type ByDate []Event
+
+func (e ByDate) Len() int {
+	return len(e)
+}
+
+func (e ByDate) Swap(i, j int) {
+	e[i], e[j] = e[j], e[i]
+}
+
+func (e ByDate) Less(i, j int) bool {
+	// If the start dates are equal, shortest event goes first
+	if e[i].Date.Start.Equal(e[j].Date.Start) {
+		return e[i].Date.End.Before(e[j].Date.End)
+	}
+
+	return e[i].Date.Start.Before(e[j].Date.Start)
+}
+
 func stripMailto(email string) string {
 	if strings.HasPrefix(email, "MAILTO:") {
 		return email[7:]

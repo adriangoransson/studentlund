@@ -1,6 +1,7 @@
 package studentlund
 
 import (
+	"sort"
 	"time"
 
 	"io/ioutil"
@@ -46,6 +47,8 @@ func translate(icalData string) ([]Event, error) {
 			events = append(events, _event)
 		}
 	}
+
+	sort.Sort(ByDate(events))
 
 	return events, nil
 }
