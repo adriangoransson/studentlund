@@ -3,6 +3,7 @@ package studentlund
 import (
 	"sort"
 	"time"
+	"log"
 
 	"io/ioutil"
 	"net/http"
@@ -20,6 +21,9 @@ func fetch(url string) (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
+	}
+	if resp.StatusCode >= 400 {
+		log.Printf("Status code %d for %s", resp.StatusCode, url)
 	}
 	defer resp.Body.Close()
 
@@ -54,13 +58,16 @@ func translate(icalData string) ([]Event, error) {
 }
 
 func convert(url string) ([]Event, error) {
+	log.SetPrefix("[Studentlund] ")
 	icalData, err := fetch(url)
 	if err != nil {
+		log.Printf("Error fetching data: %v", err)
 		return nil, err
 	}
 
 	events, err := translate(icalData)
 	if err != nil {
+		log.Printf("Error parsing data: %v", err)
 		return nil, err
 	}
 
