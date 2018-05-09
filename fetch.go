@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/laurent22/ical-go"
+	ical "github.com/adriangoransson/ical-go"
 )
 
 const (

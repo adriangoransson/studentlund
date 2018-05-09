@@ -7,7 +7,7 @@ import (
 
 	"net/url"
 
-	"github.com/laurent22/ical-go"
+	ical "github.com/adriangoransson/ical-go"
 )
 
 type Organizer struct {
