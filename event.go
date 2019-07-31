@@ -85,18 +85,19 @@ func resolveOrganizer(node *ical.Node) (Organizer, error) {
 	// ORGANIZER field didn't exist in calendar node
 	// Try parsing the organizer name from the SUMMARY field instead
 	organizerName := resolveNationByText(node.PropString("SUMMARY", ""))
-	if organizerName != "" {
-		return Organizer{
-			Name:  organizerName,
-			Email: "",
-		}, nil
-	}
 
-	// No match in SUMMARY. Try DESCRIPTION instead
-	return Organizer{
-		Name:  resolveNationByText(node.PropString("DESCRIPTION", "")),
-		Email: "",
-	}, nil
+    if organizerName == "" {
+        organizerName = resolveNationByText(node.PropString("DESCRIPTION", ""))
+    }
+
+    if organizerName == "" {
+        organizerName = resolveNationByText(node.PropString("LOCATION", ""))
+    }
+
+    return Organizer{
+        Name:  organizerName,
+        Email: "",
+    }, nil
 }
 
 func resolveNationByText(text string) string {
